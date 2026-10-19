@@ -2,37 +2,45 @@ import './scss/styles.scss';
 import { Catalogdata } from './components/Models/CatalogData';
 import { BasketData } from './components/Models/BasketData';
 import { OrderData } from './components/Models/OrderData';
-import { apiProducts } from './utils/data';
+import { Api } from './components/base/Api';
+import { AppApi } from './components/AppApi';
 
-// Тестирование каталога
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://larek.ffapi.ru';
+const API_URL = `${API_ORIGIN}/api/weblarek`;
+
+const baseApi = new Api(API_URL);
+const appApi = new AppApi(baseApi);
 
 const catalog = new Catalogdata();
 const basket = new BasketData();
 const order = new OrderData();
 
-catalog.setItems(apiProducts.items);
-console.log ('Массив товаров из каталога:', catalog.getItems());
+appApi.getProducts()
+  .then((res)=> {
+    catalog.setItems(res.items);
+    console.log('Массив товаров из каталога:', catalog.getItems());
+
+    const product1 = catalog.getItems()[0];
+    const product2 = catalog.getItems()[1];
+
+    if (product1&&product2) {
+      basket.add(product1);
+      console.log('Количество товаров после добавления:', basket.getCount());
+      console.log('Общая стоимость корзины:', basket.getTotal());
+
+      basket.remove(product1.id);
+      console.log('Количество товаров после удаления:', basket.getCount());
+
+      basket.clear();
+      console.log('Корзина после очистки:', basket.getItems());
+    }
+  })
+
+  .catch((err) => {
+    console.error('Ошибка при загрузке данных с сервера:', err);
+  });
 
 
-const product1 = apiProducts.items[0];
-const product2 = apiProducts.items[1];
-
-if (product1 && product2) {
-
-  // Тестирование корзины
-
-  basket.add(product1);
-  console.log('Количество товаров после добавления:', basket.getCount());
-  console.log('Общая стоимость корзины:', basket.getTotal());
-
-  basket.remove(product1.id);
-  console.log('Количество товаров после удаления:', basket.getCount());
-
-  basket.clear();
-  console.log('Корзина после очистки:', basket.getItems());
-}
-
-// Тестирование заказа
 
 console.log('Валидация пустых данных покупателя:', order.validateData());
 

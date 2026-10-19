@@ -29,3 +29,22 @@ export type FormErrors = {
     email?: string;
     phone?: string;
 }
+
+export interface IProductResponse {
+    total: number;
+    items: IProduct[];
+}
+
+export interface IOrderRequest {
+    payment: string;
+    email: string;
+    phone: string;
+    address: string;
+    total: number;
+    items: string[];
+}
+
+export interface IOrderResult {
+    id: string;
+    total: number;
+}

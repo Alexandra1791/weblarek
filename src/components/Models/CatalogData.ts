@@ -1,8 +1,8 @@
 import { IProduct } from "../../types";
 
 export class Catalogdata {
-  items: IProduct[] = [];
-  preview: string | null = null;
+  protected items: IProduct[] = [];
+  protected previewId: string | null = null;
 
   constructor() {
 
@@ -20,13 +20,18 @@ export class Catalogdata {
     return this.items.find(item => item.id === productId) || null;
   }
 
-  setPreview(productId: string): void {
-    this.preview = productId;
+  setPreviewId(productId: string): void {
+    this.previewId = productId;
   }
-  getPreview(): IProduct | null {
-    if (!this.preview) {
+
+  getPreviewId(): string | null {
+    return this.previewId;
+  }
+
+  getPreviewProduct(): IProduct | null {
+    if (!this.previewId) {
       return null;
     }
-    return this.getProduct(this.preview);
+    return this.getProduct(this.previewId);
   }
 }

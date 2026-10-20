@@ -4,9 +4,7 @@ import { BasketData } from './components/Models/BasketData';
 import { OrderData } from './components/Models/OrderData';
 import { Api } from './components/base/Api';
 import { AppApi } from './components/AppApi';
-
-const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://larek.ffapi.ru';
-const API_URL = `${API_ORIGIN}/api/weblarek`;
+import { API_URL } from './utils/constants';
 
 const baseApi = new Api(API_URL);
 const appApi = new AppApi(baseApi);
@@ -20,6 +18,19 @@ appApi.getProducts()
     catalog.setItems(res.items);
     console.log('Массив товаров из каталога:', catalog.getItems());
 
+    const testProductId = res.items[0]?.id;
+    if (testProductId) {
+      console.log(`Поиск товара по ID "${testProductId}":`, catalog.getProduct(testProductId))
+    }
+    console.log('Поиск несуществующего товара(должен быть null):', catalog.getProduct('fake-id'));
+    console.log('Превью до установки (должно быть null):', catalog.getPreviewId());
+
+    if (testProductId) {
+      catalog.setPreviewId(testProductId);
+      console.log('Установленный ID в превью:', catalog.getPreviewId());
+      console.log('Полученный объект товаров для превью:', catalog.getPreviewProduct());
+    }
+
     const product1 = catalog.getItems()[0];
     const product2 = catalog.getItems()[1];
 
@@ -27,6 +38,9 @@ appApi.getProducts()
       basket.add(product1);
       console.log('Количество товаров после добавления:', basket.getCount());
       console.log('Общая стоимость корзины:', basket.getTotal());
+
+      console.log(`Товар "${product1.title}" в корзине? (ожидается true):`, basket.hasProduct(product1.id));
+      console.log('Несуществующий товар в корзине? (ожидается false):',basket.hasProduct('fake-id'));
 
       basket.remove(product1.id);
       console.log('Количество товаров после удаления:', basket.getCount());

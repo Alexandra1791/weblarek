@@ -15,19 +15,15 @@ export interface IProduct {
 }
 
 export interface IBuyer {
-    payment: TPayment;
+    payment: TPayment | '';
     address: string;
     email: string;
     phone: string;
 }
 
-export type TPayment = 'card' | 'cash' | '';
+export type TPayment = 'card' | 'cash';
 
-export type FormErrors = {
-    payment?: string;
-    address?: string;
-    email?: string;
-    phone?: string;
+export type FormErrors = Partial<Record<keyof IBuyer, string>>;
 }
 
 export interface IProductResponse {

@@ -1,14 +1,12 @@
 import { IBuyer, FormErrors, TPayment } from "../../types";
 
 export class OrderData {
-  buyer:IBuyer = {
+  protected buyer:IBuyer = {
   payment: '',
   email: '',
   phone: '',
   address: ''
   };
-
-  errors: FormErrors = {};
 
   constructor() {
 
@@ -25,11 +23,14 @@ export class OrderData {
       phone: '',
       address: ''
     };
-    this.errors = {};
   }
 
   setField(field: keyof IBuyer, value: string): void {
-    this.buyer[field] = value as TPayment;
+    if (field === 'payment') {
+      this.buyer[field] = value as TPayment | '';
+    } else {
+      this.buyer[field] = value;
+    }
   }
 
   validateData(): FormErrors {
@@ -51,7 +52,6 @@ export class OrderData {
       errors.phone = 'Необходимо указать телефон'
     }
 
-    this.errors = errors;
     return errors;
   }
 }

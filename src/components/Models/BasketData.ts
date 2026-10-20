@@ -1,7 +1,8 @@
 import { IProduct } from "../../types";
 
 export class BasketData {
-  items: IProduct[] = [];
+  protected items: IProduct[] = [];
+
   constructor() {
 
   }
@@ -28,5 +29,9 @@ export class BasketData {
 
   getTotal(): number {
     return this.items.reduce((sum, item) => sum + (item.price || 0),0);
+  }
+
+  hasProduct(productId: string): boolean {
+    return this.items.some(item => item.id === productId);
   }
 }

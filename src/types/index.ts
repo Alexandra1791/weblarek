@@ -24,7 +24,7 @@ export interface IBuyer {
 export type TPayment = 'card' | 'cash';
 
 export type FormErrors = Partial<Record<keyof IBuyer, string>>;
-}
+
 
 export interface IProductResponse {
     total: number;

@@ -1,4 +1,5 @@
 import { IBuyer, FormErrors, TPayment } from "../../types";
+import { IEvents } from "../base/Events";
 
 export class OrderData {
   protected buyer:IBuyer = {
@@ -8,7 +9,7 @@ export class OrderData {
   address: ''
   };
 
-  constructor() {
+  constructor(protected events: IEvents) {
 
   }
 
@@ -23,6 +24,7 @@ export class OrderData {
       phone: '',
       address: ''
     };
+    this.events.emit('order:changed');
   }
 
   setField(field: keyof IBuyer, value: string): void {
@@ -31,6 +33,7 @@ export class OrderData {
     } else {
       this.buyer[field] = value;
     }
+    this.events.emit('order:changed', {field});
   }
 
   validateData(): FormErrors {

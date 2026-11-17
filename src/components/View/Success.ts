@@ -1,12 +1,7 @@
 import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
+import { ISuccess,ISuccessAction } from "../../types";
 
-export interface ISuccess {
-  total: number;
-}
-export interface ISuccessAction {
-  onClick: () => void;
-}
 
 export class Success extends Component<ISuccess> {
   protected descriptionElement: HTMLElement;

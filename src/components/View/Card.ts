@@ -1,20 +1,6 @@
 import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
-
-export interface ICardActions {
-  onClick: (event: MouseEvent) => void;
-}
-
-export interface ICard {
-  title: string;
-  price: number | null;
-  category?: string;
-  image?: string;
-  description?: string;
-  index?: number;
-  buttonText?: string;
-  buttonDisabled?: boolean;
-}
+import { ICard } from "../../types";
 
 export class Card extends Component<ICard> {
   protected titleElement: HTMLElement;

@@ -1,9 +1,7 @@
 import { Form } from "./Form";
 import { IEvents } from "../base/Events";
 import { ensureElement } from "../../utils/utils";
-import { IBuyer, TPayment } from "../../types";
-
-export type IOrderForm = Pick<IBuyer, 'payment' | 'address'>;
+import { TPayment, IOrderForm } from "../../types";
 
 export class OrderForm extends Form<IOrderForm> {
   protected onlineButton: HTMLButtonElement;

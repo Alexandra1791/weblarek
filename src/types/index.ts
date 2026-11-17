@@ -44,3 +44,51 @@ export interface IOrderResult {
     id: string;
     total: number;
 }
+
+export interface IModalData {
+  content: HTMLElement;
+}
+
+export interface IFormState {
+  valid: boolean;
+  errors: string;
+}
+
+export interface ICardActions {
+  onClick: (event: MouseEvent) => void;
+}
+
+export interface ICard {
+  title: string;
+  price: number | null;
+  category?: string;
+  image?: string;
+  description?: string;
+  index?: number;
+  buttonText?: string;
+  buttonDisabled?: boolean;
+}
+
+export interface IHeader {
+  counter: number;
+}
+
+export interface IGallery {
+  catalog: HTMLElement[];
+}
+
+export interface IBasketView {
+  items: HTMLElement[];
+  total: number;
+}
+
+export type IOrderForm = Pick<IBuyer, 'payment' | 'address'>;
+
+export type IContactsForm = Pick<IBuyer, 'email' | 'phone'>;
+
+export interface ISuccess {
+  total: number;
+}
+export interface ISuccessAction {
+  onClick: () => void;
+}

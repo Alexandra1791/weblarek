@@ -1,4 +1,5 @@
-import { Card, ICardActions} from './Card';
+import { Card } from './Card';
+import { ICardActions } from '../../types';
 import { ensureElement } from '../../utils/utils';
 import { CDN_URL, categoryMap} from '../../utils/constants';
 

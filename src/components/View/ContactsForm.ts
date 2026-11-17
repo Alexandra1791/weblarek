@@ -1,9 +1,7 @@
 import { Form } from "./Form";
 import { IEvents } from "../base/Events";
 import { ensureElement } from "../../utils/utils";
-import { IBuyer } from "../../types";
-
-export type IContactsForm = Pick<IBuyer, 'email' | 'phone'>;
+import { IContactsForm } from "../../types";
 
 export class ContactsForm extends Form<IContactsForm> {
   protected emailInput: HTMLInputElement;

@@ -1,8 +1,5 @@
 import { Component } from "../base/Component";
-
-export interface IGallery {
-  catalog: HTMLElement[];
-}
+import { IGallery } from "../../types";
 
 export class Gallery extends Component<IGallery> {
   constructor(container: HTMLElement) {

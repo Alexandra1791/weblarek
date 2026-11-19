@@ -115,7 +115,7 @@ Presenter - презентер содержит основную логику п
 #### Интерфейс IBuyer
 Описывает структуру данных покупателя.
 interface IBuyer {
-  payment: TPayment;
+  payment: TPayment | '';
   email: string;
   phone: string;
   address: string;
@@ -139,12 +139,29 @@ interface IFormState {
 interface ICard {
   title: string;
   price: number | null;
-  category?: string;
-  image?: string;
-  description?: string;
-  index?: number;
-  buttonText?: string;
-  buttonDisabled?: boolean;
+}
+
+#### Интерфейс ICardCatalog
+Описывает данные для отображения краточки товара в каталоге на главной странице. Наследуется от `ICard`.
+interface ICardCatalog extends ICard {
+  category: string;
+  image: string;
+}
+
+#### Интерфейс ICardPreview
+Описывает данные для отображения подробной карточки товара в модальном окне. Наследуется от `ICard`.
+interface ICardPreview extends ICard {
+  category: string;
+  image: string;
+  description: string;
+  buttonText: string;
+  buttonDisabled: boolean;
+}
+
+#### Интерфейс ICardBasket
+Описывает данные для отображения компактной карточки товара в корзине. Наследуется от `ICard`.
+interface ICardBasket extends ICard {
+  index: number;
 }
 
 #### Интерфейс ICardActions
@@ -170,6 +187,7 @@ interface IGallery {
 interface IBasketView {
   items: HTMLElement[];
   total: number;
+  buttonDisabled?: boolean;
 }
 
 #### Интерфейс ISuccess
@@ -197,11 +215,11 @@ interface ISuccessAction {
 #### Класс CatalogData (Каталог товаров)
 
 Конструктор:
-`constructor()` - создает пустой список товаров и закрывает просмотр карточек. Работает без настроек.
+`constructor(protected events: IEvents)` - создает пустой список товаров и закрывает просмотр карточек. 
 
 Поля класса:
 `protected items: IProduct[]` - хранит массив всех товаров, доступных для покупки.
-`protected preview: string | null` - хранит идентификатор (`id`) товара, выбранного для отображения в модальном окне.
+`protected previewId: string | null` - хранит идентификатор (`id`) товара, выбранного для отображения в модальном окне.
 
 Методы класса:
 `setItems(product: IProduct[]): void` - берёт список товаров из интернета и сохраняет его в проект. Ничего не возвращает.
@@ -215,7 +233,7 @@ interface ISuccessAction {
 Класс отвечает за хранение товаров, которые покупатель отложил для покупки.
 
 Конструктор:
-`constructor()` — делает корзину изначально пустой. Работает без настроек.
+`constructor(protected events: IEvents)` — делает корзину изначально пустой. 
 
 Поля класса:
 `protected items: IProduct[]` - список товаров, которые лежат в корзине.
@@ -225,7 +243,7 @@ interface ISuccessAction {
 `add(product: IProduct): void` - добавляет выбранный товар в корзину. Ничего не возвращает.
 `remove(productId: string): void` - убирает товар из корзины по его ID. Ничего не возвращает.
 `clear(): void` - полностью опустошает корзину. Ничего не возвращает.
-`getTotal(): number` - считает общую стоимость всех товаров в корзине и возращает итоговую сумму.
+`getTotal(): number` - считает общую стоимость всех товаров в корзине и возвращает итоговую сумму.
 `getCount(): number` - считает и возвращает общее количество товаров  в корзине.
 `hasProduct(productId: string): boolean` - проверяет, лежит ли уже этот конкретный товар в корзине. Возвращает true/false.
 
@@ -233,7 +251,7 @@ interface ISuccessAction {
 Класс собирает данные покупателя (адрес, телефон, почту, способ оплаты), проверяет их на ошибки и хранит до отправки заказа.
 
 Конструктор
-`constructor()` - создает чистую анкету покупателя, где еще ничего не заполнено.
+`constructor(protected events: IEvents)` - создает чистую анкету покупателя, где еще ничего не заполнено.
 
 Поля класса:
 `protected buyer: IBuyer` - анкета с данными покупателя (оплата, адрес, телефон, email).
@@ -242,7 +260,7 @@ interface ISuccessAction {
 `setField(field: keyof IBuyer, value: string): void` - сохраняет текст в конкретную строку анкеты, не стирая при этом остальные заполненные поля. Ничего не возвращает.
 `getBuyerData(): IBuyer` - отдает всю заполненную анкету покупателя целиком.
 `clear(): void` - полностью стирает всю анкету и сбрасывает список ошибок. Ничего не возвращает.
-`validatedata(): FormErrors` - проверяет, чтобы ни одно поле в анкете не осталось пустым. Если находит пустое поле, возвращает текст ошибки для него.
+`validateData(): FormErrors` - проверяет, чтобы ни одно поле в анкете не осталось пустым. Если находит пустое поле, возвращает текст ошибки для него.
 
 ### Слой коммуникации
 Классы этого слоя отвечают за организацию взаимодействия между моделями данных приложения и внешним сервером.
@@ -264,7 +282,7 @@ interface ISuccessAction {
 Универсальное модальное окно
 
 Конструктор:
-`constructor(container: HTMLElement, protected events: IEvents)` - находит кнопку закрытия и контейнер контента, вешает слушатели закрытия по клику на крестик и оверлей.
+`constructor(container: HTMLElement)` - находит кнопку закрытия и контейнер контента, вешает слушатели закрытия по клику на крестик и оверлей.
 
 Поля:
 `protected closeButton: HTMLButtonElement` - кнопка закрытия модального окна.
@@ -273,19 +291,14 @@ interface ISuccessAction {
 
 Методы класса:
 `set content(value: HTMLElement)` - заменяет содержимое модального окна.
-`open(): void` - открывает модальное окно и генерирует событие `modal:open`.
-`close(): void` - закрывает модальное окно, очищает контент и генерирует событие `modal:close`.
-`render(data: IModalData): HTMLElement` - устанавливает контент и открывает модальное окно.
-
-Генерируемые события:
-`modal:open` - открытие модального окна.
-`modal:close` - закрытие модального окна.
+`open(): void` - открывает модальное окно.
+`close(): void` - закрывает модальное окно.
 
 #### Класс Form
 Базовый класс для всех форм в приложении. Отслеживает ввод данных в поля, управляет блокировкой кнопки отправки и выводит текст ошибок.
 
 Конструктор:
-`constructor(protected container: HTMLFormElement, protected events: IEvents)` -  принимает элемент формы и брокер событий. Находит кнопку отправки и блок ошибок, вешает слушатели событий `input` и `submit`.
+`constructor(container: HTMLFormElement, protected events: IEvents)` -  принимает элемент формы и брокер событий. Находит кнопку отправки и блок ошибок, вешает слушатели событий `input` и `submit`.
 
 Поля класса:
 `protected submitButton: HTMLButtonElement` - кнопка отправки формы.
@@ -295,7 +308,6 @@ interface ISuccessAction {
 `protected onInputChange(field: keyof T, value:string):void` - генерирует событие об изменении конкретного поля формы.
 `set valid(value: boolean)` - включает или отключает кнопку отправки формы.
 `set errors(value: string)` - выводит текст ошибок валидации.
-`render(state: Partial<T> & IFormState): HTMLFormElement` - обновляет состояние валидности, ошибки и значения полей формы.
 
 Генерируемые события:
 `${this.container.name}.${String(field)}:change` - изменение значения в поле формы.
@@ -341,24 +353,24 @@ interface ISuccessAction {
 `set catalog(items: HTMLElement[])` - заменяет содержимое каталога переданным массивом DOM-элементов карточек.
 
 #### Класс CardCatalog
-Компонент карточки товара для отображения в общем каталоге на главной странице. Наследуется от класса `Card`.
+Компонент карточки товара для отображения в общем каталоге на главной странице. Наследуется от класса `Card<ICardCatalog>`.
 
 Конструктор:
 `constructor(container: HTMLElement, actions?: ICardActions)` - принимает темплейт карточки и объект с колбэками. Находит элементы категории и изображения, вешает обработчик клика по карточке.
 
 Поля класса:
 `protected categoryElement: HTMLElement` - элемент отображения категории товара.
-`protected imageElement: HTMLImageElement` - устанавливает изображения товара.
+`protected imageElement: HTMLImageElement` - элемент изображения товара.
 
 Методы класса:
 `set category(value: string)` - устанавливает текст категории и применяет соответствующий CSS-класс фона.
-`set image(value: string)` - элемент изображения товара.
+`set image(value: string)` - устанавливает изображение товара.
 
 Генерируемые события:
 `card:select` (через переданный колбэк `onClick`) - клик по карточке товара в каталоге.
 
 #### Класс CardPreview
-Компонент подробной карточки товара для отображения в модальном окне при просмотре. Наследуется от класса `Card`.
+Компонент подробной карточки товара для отображения в модальном окне при просмотре. Наследуется от класса `Card<ICardPreview>`.
 
 Конструктор:
 `constructor(container: HTMLElement, action?: ICardActions)` - принимает темплейт карточки превью и объект с колбэками. Находит элементы карточки и кнопку покупки/удаления, вешает слушатель клика на кнопку.
@@ -380,7 +392,7 @@ interface ISuccessAction {
 `card:toggle` (через переданный колбэк `onClick`) - нажатие на кнопку покупки/удаления товара.
 
 #### Класс CardBasket
-Компонент компактной карточки товара для отображения в списке внутри корзины. Наследуется от класса `Card`.
+Компонент компактной карточки товара для отображения в списке внутри корзины. Наследуется от класса `Card<ICardBasket>`.
 
 Конструктор:
 `constructor(container: HTMLElement, actions?: ICardActions)` - принимает темплейт карточки корзины и объект с колбэками. Находит порядковый номер и кнопку удаления, вешает слушатель клика на кнопку удаления.
@@ -407,7 +419,8 @@ interface ISuccessAction {
 `protected button: HTMLButtonElement` - кнопка "Оформить".
 
 Методы класса:
-`set items(items: HTMLElement[])` - отображает список карточек в корзине и управляет активностью кнопки оформления.
+`set items(items: HTMLElement[])` - отображает список карточек в корзине.
+`set buttonDisabled(value: boolean)` - блокирует или разблокирует кнопку оформления заказа.
 `set total(value: number)` - устанавливает итоговую сумму заказа.
 
 Генерируемые события:
@@ -466,7 +479,7 @@ interface ISuccessAction {
 `set total(value:number)` - формирует и отображает текст с суммой списанных средств.
 
 Генерируемые события:
-Закрывает модальное окно через переданный колбэк `onClick`.
+`success:click` (через переданный колбэк `onClick`) - клик по кнопке "За новыми покупками!".
 
 ### Слой Презентер
 Логика взаимодействия между слоем данных (Model) и слоем отображения (View). Презентер подписывается на события моделей и представлений, обеспечивая обновление интерфейса при изменении данных и обработку действий пользователя.
@@ -479,13 +492,13 @@ interface ISuccessAction {
 
 #### События слоя представления
 `card:select` - клик по карточке товара в каталоге. Сохраняет идентификатор выбранного товара в `CatalogData`.
-`card:toggle` - клик по кнопке покупки или удаления в `CardPreview`. Добавляет товар в `BasketData` или удаляет его оттуда, после чего закрыввает модальное окно.
-`basket:open` - клик по кнопке корзины в `Header`. ОТкрывает модальное окно `Modal` с содержимым компонента `Basket`.
-`basket:remove` - клик по удаления позиции в `CardBasket`. Удаляет соответсвующий товар из `BasketData`.
-`order:open` -клик по кнопке "Оформить" в `Basket`. Открывает в модальном окне первую форму заказа `OrderForm`.
-`order.payment:change` / `order.address:change` - выбор способа оплаты или ввод адреса доставки в `OrderForm`. Сохраняет введенное значение `OrderData`.
+`card:toggle` - клик по кнопке покупки или удаления в `CardPreview`. Добавляет товар в `BasketData` или удаляет его оттуда, после чего закрывает модальное окно.
+`basket:open` - клик по кнопке корзины в `Header`. Открывает модальное окно `Modal` с содержимым компонента `Basket`.
+`basket:remove` - клик по кнопке удаления позиции в `CardBasket`. Удаляет соответствующий товар из `BasketData`.
+`order:open` - клик по кнопке "Оформить" в `Basket`. Открывает в модальном окне первую форму заказа `OrderForm`.
+`order.payment:change` / `order.address:change` - выбор способа оплаты или ввод адреса доставки в `OrderForm`. Сохраняет введенное значение в `OrderData`.
 `order:submit` - подтверждение первой формы оформления заказа. Открывает в модальном окне вторую форму заказа `ContactsForm`.
-`contacts.email:change` / `contacts.phone:change` - ввод электронной почты или номера телефона в `ContactsForm`. Сохраняет введенное значение `OrderData`.
+`contacts.email:change` / `contacts.phone:change` - ввод электронной почты или номера телефона в `ContactsForm`. Сохраняет введенное значение в `OrderData`.
 `contacts:submit` - отправка формы контактных данных. Отправляет сформированный заказ на сервер через `AppApi.postOrder()`, после успешного ответа очищает корзину и данные покупателя и открывает окно `Success`.
-`modal:open` / `modal:close` - открытие и закрытие модального окна `Modal`. Блокирует и разблокирует прокрутку основной страницы.
+`success:click` - клик по кнопке "За новыми покупками!" в окне `Success`. Закрывает модальное окно `Modal`.
 

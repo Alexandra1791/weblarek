@@ -1,9 +1,9 @@
 import { Card } from './Card';
-import { ICardActions } from '../../types';
+import { ICardActions, ICardCatalog } from '../../types';
 import { ensureElement } from '../../utils/utils';
-import { CDN_URL, categoryMap} from '../../utils/constants';
+import { categoryMap } from '../../utils/constants';
 
-export class CardCatalog extends Card {
+export class CardCatalog extends Card<ICardCatalog> {
   protected categoryElement: HTMLElement;
   protected imageElement: HTMLImageElement;
 
@@ -28,6 +28,6 @@ export class CardCatalog extends Card {
   }
 
   set image(value: string) {
-    this.setImage(this.imageElement, `${CDN_URL}${value}`, this.titleElement.textContent|| ''); 
+    this.setImage(this.imageElement, value); 
   }
 }

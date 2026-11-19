@@ -2,12 +2,13 @@ import './scss/styles.scss';
 import { EventEmitter } from './components/base/Events';
 import { Api } from './components/base/Api';
 import { AppApi } from './components/AppApi';
-import { API_URL } from './utils/constants';
+import { API_URL, CDN_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from './utils/utils';
 import { IBuyer, IProduct } from './types';
 
 
-import { Catalogdata } from './components/Models/CatalogData';
+
+import { CatalogData } from './components/Models/CatalogData';
 import { BasketData } from './components/Models/BasketData';
 import { OrderData } from './components/Models/OrderData';
 
@@ -26,11 +27,10 @@ const events = new EventEmitter();
 const baseApi = new Api(API_URL);
 const appApi = new AppApi(baseApi);
 
-const catalogModel = new Catalogdata(events);
+const catalogModel = new CatalogData(events);
 const basketModel = new BasketData(events);
 const orderModel = new OrderData(events);
 
-const pageWrapper = ensureElement<HTMLElement>('.page__wrapper');
 const headerContainer = ensureElement<HTMLElement>('.header');
 const galleryContainer = ensureElement<HTMLElement>('.gallery');
 const modalContainer = ensureElement<HTMLElement>('#modal-container');
@@ -45,13 +45,16 @@ const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 const header = new Header(headerContainer, events);
 const gallery = new Gallery(galleryContainer);
-const modal = new Modal (modalContainer, events);
+const modal = new Modal (modalContainer);
 
+const cardPreview = new CardPreview(cloneTemplate(cardPreviewTemplate), {
+  onClick:() => events.emit('card:toggle'),
+});
 const basketView = new Basket(cloneTemplate(basketTemplate), events);
 const orderForm = new OrderForm(cloneTemplate(orderTemplate), events);
 const contactsForm = new ContactsForm(cloneTemplate(contactsTemplate), events);
 const successView = new Success(cloneTemplate(successTemplate), {
-  onClick: () => modal.close(),
+  onClick: () => events.emit('success:click'),
 });
 
 
@@ -78,17 +81,13 @@ events.on('preview:changed', () => {
   const isInBasket = basketModel.hasProduct(product.id);
   const isPriceless = product.price === null;
 
-  let buttonText = 'В корзину';
+  let buttonText = 'Купить';
   if (isPriceless) {
     buttonText = 'Недоступно';
   } else if (isInBasket) {
     buttonText = 'Удалить из корзины';
   }
-
-  const cardPreview = new CardPreview(cloneTemplate(cardPreviewTemplate), {
-    onClick: () => events.emit('card:toggle', product),
-  });
-
+ 
   modal.render({
     content: cardPreview.render({
       title: product.title,
@@ -100,6 +99,7 @@ events.on('preview:changed', () => {
       buttonDisabled: isPriceless,
     }),
   });
+  modal.open();
 });
 
 events.on('basket:changed', () => {
@@ -119,6 +119,7 @@ events.on('basket:changed', () => {
   basketView.render({
     items: basketItems,
     total: basketModel.getTotal(),
+    buttonDisabled: basketModel.getCount() ===0,
   });
 });
 
@@ -147,11 +148,14 @@ events.on('card:select', (item: IProduct) => {
   catalogModel.setPreviewId(item.id);
 });
 
-events.on('card:toggle', (item: IProduct) => {
-  if (basketModel.hasProduct(item.id)) {
-    basketModel.remove(item.id);
+events.on('card:toggle', () => {
+  const product = catalogModel.getPreviewProduct();
+  if(!product) return;
+
+  if (basketModel.hasProduct(product.id)) {
+    basketModel.remove(product.id);
   } else {
-    basketModel.add(item);
+    basketModel.add(product);
   }
   modal.close();
 });
@@ -160,6 +164,7 @@ events.on('basket:open', () => {
   modal.render({
     content: basketView.render(),
   });
+  modal.open();
 });
 
 events.on('basket:remove', (item: IProduct) => {
@@ -167,18 +172,10 @@ events.on('basket:remove', (item: IProduct) => {
 });
 
 events.on('order:open', () => {
-  const buyer = orderModel.getBuyerData();
-  const errors = orderModel.validateData();
-  const orderErrors = [errors.payment, errors.address].filter(Boolean).join('; ');
-
   modal.render({
-    content: orderForm.render({
-      payment: buyer.payment,
-      address: buyer.address,
-      valid: !errors.payment && !errors.address,
-      errors: orderErrors,
-    }),
+    content: orderForm.render(),
   });
+  modal.open();
 });
 
 events.on(
@@ -189,18 +186,10 @@ events.on(
 );
 
 events.on('order:submit', () => {
-  const buyer = orderModel.getBuyerData();
-  const errors = orderModel.validateData();
-  const contactsErrors = [errors.email, errors.phone].filter(Boolean).join('; ');
-
   modal.render({
-    content: contactsForm.render({
-      email: buyer.email,
-      phone: buyer.phone,
-      valid: !errors.email && !errors.phone,
-      errors: contactsErrors,
-    }),
+    content: contactsForm.render(),
   });
+  modal.open();
 });
 
 events.on('contacts:submit', () => {
@@ -222,26 +211,30 @@ events.on('contacts:submit', () => {
       modal.render({
         content: successView.render({ total: result.total }),
       });
+      modal.open();
     })
     .catch((err) => {
       console.error('Ошибка при оформлении заказа:', err);
     });
 });
 
-events.on('modal:open', () => {
-  pageWrapper.classList.add('page__wrapper_locked');
-});
-
-events.on('modal:close', () => {
-  pageWrapper.classList.remove('page__wrapper_locked');
+events.on('success:click', () =>{
+  modal.close();
 });
 
 appApi
   .getProducts()
   .then((response) => {
-    catalogModel.setItems(response.items);
+    const items = response.items.map((item) => ({
+      ...item,
+      image: `${CDN_URL}${item.image}`
+    }));
+    catalogModel.setItems(items);
   })
   .catch((err) => {
     console.error('Ошибка при загрузке каталога товаров:', err);
   });
+
+basketModel.clear();
+orderModel.clear();
 

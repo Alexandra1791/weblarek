@@ -12,10 +12,7 @@ export class Success extends Component<ISuccess> {
 
     this.descriptionElement = ensureElement<HTMLElement>('.order-success__description', container);
     this.closeButton = ensureElement<HTMLButtonElement>('.order-success__close', container);
-  
-    if (actions?.onClick) {
-      this.closeButton.addEventListener('click', actions.onClick);
-    }
+    this.closeButton.addEventListener('click', actions.onClick);
   }
 
   set total(value:number) {

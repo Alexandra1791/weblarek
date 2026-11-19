@@ -1,6 +1,6 @@
 import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
-import { ensureElement, createElement } from "../../utils/utils";
+import { ensureElement } from "../../utils/utils";
 import { IBasketView } from "../../types";
 
 export class Basket extends Component<IBasketView> {
@@ -17,21 +17,14 @@ export class Basket extends Component<IBasketView> {
     this.button.addEventListener('click', () => {
       this.events.emit('order:open');
     });
-    this.items = [];
   }
 
   set items(items: HTMLElement[]) {
-    if (items.length) {
-      this.listElement.replaceChildren(...items);
-      this.button.disabled = false;
-    } else {
-      this.listElement.replaceChildren(
-        createElement<HTMLParagraphElement>('p', {
-          textContent: 'Корзина пуста',
-        })
-      );
-      this.button.disabled = true;
-    }
+    this.listElement.replaceChildren(...items);
+  }
+
+  set buttonDisabled(value: boolean){
+    this.button.disabled = value;
   }
 
   set total(value: number) {

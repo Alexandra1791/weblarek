@@ -61,12 +61,23 @@ export interface ICardActions {
 export interface ICard {
   title: string;
   price: number | null;
-  category?: string;
-  image?: string;
-  description?: string;
-  index?: number;
-  buttonText?: string;
-  buttonDisabled?: boolean;
+}
+
+export interface ICardCatalog extends ICard {
+    category: string;
+    image: string;
+}
+
+export interface ICardPreview extends ICard {
+    category: string;
+    image: string;
+    description: string;
+    buttonText: string;
+    buttonDisabled: boolean;
+}
+
+export interface ICardBasket extends ICard {
+    index: number;
 }
 
 export interface IHeader {
@@ -80,6 +91,7 @@ export interface IGallery {
 export interface IBasketView {
   items: HTMLElement[];
   total: number;
+  buttonDisabled?: boolean;
 }
 
 export type IOrderForm = Pick<IBuyer, 'payment' | 'address'>;

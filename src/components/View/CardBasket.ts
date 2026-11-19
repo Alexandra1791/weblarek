@@ -1,8 +1,8 @@
 import { Card } from './Card';
-import { ICardActions } from '../../types';
+import { ICardActions, ICardBasket } from '../../types';
 import { ensureElement } from '../../utils/utils';
 
-export class CardBasket extends Card {
+export class CardBasket extends Card<ICardBasket> {
   protected indexElement: HTMLElement;
   protected deleteButton: HTMLButtonElement;
 

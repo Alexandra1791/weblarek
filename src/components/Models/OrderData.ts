@@ -33,7 +33,7 @@ export class OrderData {
     } else {
       this.buyer[field] = value;
     }
-    this.events.emit('order:changed', {field});
+    this.events.emit('order:changed');
   }
 
   validateData(): FormErrors {
